@@ -10,25 +10,37 @@
 #' @param abandon.factor a multiplying coefficient controlling when straying particles should be abandoned. The max cluster distance from the origin or the finite source distance from the origin, whichever is greater, are multiplied by this factor to get the abandoning distance.
 #' If a particle strays farther than the abandoning distance from the cluster, it is abandoned.
 #' @param diameter.tol a fraction of the particle diameter representing the sticking penetration tolerance.
-#' @param report.every if not NULL or Inf, growing the cluster will be split into stages of adding this many particles.
-#' @param verbose logical, indicating whether the function should print out progress statements at the end of each stage controlled by \code{report.every}.
-#' @param write.to if not NULL, it is the file path to which the function will save the cluster at the end of each stage controlled by \code{report.every}.
+#' @param checkin.every if not NULL or Inf, growing the cluster will be split into stages of adding this many particles.
+#' At the end of each stage the function will check whether the source has been blocked by the cluster (if yes - will message stop).
+#' It may also print a progress message and export cluster to a file, as controlled by the arguments \code{verbose} and \code{write.to}.
+#' @param verbose logical, indicating whether the function should print out progress statements at the end of each stage controlled by \code{checkin.every}.
+#' @param write.to if not NULL, it is the file path to which the function will export the cluster at the end of each stage controlled by \code{checkin.every}.
 #'
 #' @return A dataframe containing coordinates of cluster particles. The number of rows will be the number of points in the initial cluster plus \code{N}.
 #' @export
 #'
 #' @examples
-dla=function(N=200, initial=data.frame(x=0,y=0), source=Inf, abandon.factor=10, diameter.tol=0.01, report.every=NULL, verbose=TRUE, write.to=NULL){
+dla=function(N=5000, initial=data.frame(x=0,y=0), source=Inf, abandon.factor=10, diameter.tol=0.01, checkin.every=5000, verbose=TRUE, write.to=NULL){
   tic=proc.time()[3]
 
   d=ncol(initial)
+  if(is.null(checkin.every)) checkin.every=Inf
 
   if(!(d %in% c(2,3))){
     message('Error. Initial cluster data-frame must have 2 or 3 columns: it is the dimensionality of space.\n')
     return(NULL)
   }
 
-  if(is.null(report.every)) report.every=Inf
+  if(is.infinite(N)&is.infinite(checkin.every)){
+    message('Error. Number of particles N is infinite, but checkin.every is not set to a finite number. This would cause the function to grow the cluster infinitely without exporting. \n')
+    return(NULL)
+  }
+
+  if(is.infinite(N)&is.null(write.to)){
+    message('Error. Number of particles N is infinite, but write.to is NULL. This would cause the function to grow the cluster infinitely without exporting. \n')
+    return(NULL)
+  }
+
 
   export=(!is.null(write.to))
 
@@ -39,14 +51,14 @@ dla=function(N=200, initial=data.frame(x=0,y=0), source=Inf, abandon.factor=10, 
 
     if(d==2){
       while(nrow(df)<N){
-        df=dla2dinf(N=min(report.every,N-nrow(df)),initial=df,abandon.factor = abandon.factor,diameter.tol=diameter.tol)
+        df=dla2dinf(N=min(checkin.every,N-nrow(df)),initial=df,abandon.factor = abandon.factor,diameter.tol=diameter.tol)
         if(export) saveRDS(df,file=write.to)
         if(verbose) cat(paste0('Particles: ',nrow(df),'. Elapsed time: ',round(proc.time()[3]-tic),' sec.\n'))
       }
     }
     if(d==3){
       while(nrow(df)<N){
-        df=dla3dinf(N=min(report.every,N-nrow(df)),initial=df,abandon.factor = abandon.factor,diameter.tol=diameter.tol)
+        df=dla3dinf(N=min(checkin.every,N-nrow(df)),initial=df,abandon.factor = abandon.factor,diameter.tol=diameter.tol)
         if(export) saveRDS(df,file=write.to)
         if(verbose) cat(paste0('Particles: ',nrow(df),'. Elapsed time: ',round(proc.time()[3]-tic),' sec.\n'))
       }
@@ -54,19 +66,32 @@ dla=function(N=200, initial=data.frame(x=0,y=0), source=Inf, abandon.factor=10, 
 
 
   }else{
+    sourceblocked=FALSE
 
     if(d==2){
       while(nrow(df)<N){
-        df=dla2dsource(N=min(report.every,N-nrow(df)),initial=df, source=source, abandon.factor = abandon.factor,diameter.tol=diameter.tol)
+        df=dla2dsource(N=min(checkin.every,N-nrow(df)),initial=df, source=source, abandon.factor = abandon.factor,diameter.tol=diameter.tol)
+        if(all(df[nrow(df),]==source)){
+          cat('Cluster blocked the source.\n')
+          df=df[!duplicated(df),]
+          sourceblocked=TRUE
+        }
         if(export) saveRDS(df,file=write.to)
         if(verbose) cat(paste0('Particles: ',nrow(df),'. Elapsed time: ',round(proc.time()[3]-tic),' sec.\n'))
+        if(sourceblocked) break
       }
     }
     if(d==3){
       while(nrow(df)<N){
-        df=dla3dsource(N=min(report.every,N-nrow(df)),initial=df, source=source, abandon.factor = abandon.factor,diameter.tol=diameter.tol)
+        df=dla3dsource(N=min(checkin.every,N-nrow(df)),initial=df, source=source, abandon.factor = abandon.factor,diameter.tol=diameter.tol)
+        if(all(df[nrow(df),]==source)){
+          cat('Cluster blocked the source.\n')
+          df=df[!duplicated(df),]
+          sourceblocked=TRUE
+        }
         if(export) saveRDS(df,file=write.to)
         if(verbose) cat(paste0('Particles: ',nrow(df),'. Elapsed time: ',round(proc.time()[3]-tic),' sec.\n'))
+        if(sourceblocked) break
       }
     }
   }
@@ -390,10 +415,11 @@ dla3dsource=function(N=200,initial=data.frame(x=0,y=0,z=0), source=c(100,0,0), a
 #' @param color1 color for the latest particles, end color of the color scale
 #' @param return.data logical, whether the function should return the data frame used for plotting
 #' @param plot logical, whether the function should produce a plot
+#' @param dupl.rm logical, whether to remove duplicate particles (particles with identical coordinates), leaving the earliest ones. Normally, there should not be duplicate particles, but one exception is when the source of particles was at a finite point and the cluster reached it, so all particles emitted after that remain at the source.
 #' @return if \code{return.data} is TRUE, will return the data frame with the extra column "color" containing particle colors
 #' @export
 #'
-vis.dla=function(data,color0='green',color1='red',return.data=FALSE,plot=TRUE){
+vis.dla=function(data,color0='green',color1='red',return.data=FALSE,plot=TRUE, dupl.rm=TRUE){
 
   data=as.data.frame(data)
 
@@ -410,6 +436,8 @@ vis.dla=function(data,color0='green',color1='red',return.data=FALSE,plot=TRUE){
 
   if(d==2) {names(data)=c('x','y')}
   if(d==3) {names(data)=c('x','y','z')}
+
+  if(dupl.rm) data=unique(data)
 
   data$color=colorRampPalette(c(color0,color1))(nrow(data))
 

@@ -4,8 +4,8 @@
 \alias{dla}
 \title{Generate DLA cluster}
 \usage{
-dla(N = 200, initial = data.frame(x = 0, y = 0), source = Inf,
-  abandon.factor = 10, diameter.tol = 0.01, report.every = NULL,
+dla(N = 5000, initial = data.frame(x = 0, y = 0), source = Inf,
+  abandon.factor = 10, diameter.tol = 0.01, checkin.every = 5000,
   verbose = TRUE, write.to = NULL)
 }
 \arguments{
@@ -22,11 +22,13 @@ If a particle strays farther than the abandoning distance from the cluster, it i
 
 \item{diameter.tol}{a fraction of the particle diameter representing the sticking penetration tolerance.}
 
-\item{report.every}{if not NULL or Inf, growing the cluster will be split into stages of adding this many particles.}
+\item{checkin.every}{if not NULL or Inf, growing the cluster will be split into stages of adding this many particles.
+At the end of each stage the function will check whether the source has been blocked by the cluster (if yes - will message stop).
+It may also print a progress message and export cluster to a file, as controlled by the arguments \code{verbose} and \code{write.to}.}
 
-\item{verbose}{logical, indicating whether the function should print out progress statements at the end of each stage controlled by \code{report.every}.}
+\item{verbose}{logical, indicating whether the function should print out progress statements at the end of each stage controlled by \code{checkin.every}.}
 
-\item{write.to}{if not NULL, it is the file path to which the function will save the cluster at the end of each stage controlled by \code{report.every}.}
+\item{write.to}{if not NULL, it is the file path to which the function will export the cluster at the end of each stage controlled by \code{checkin.every}.}
 }
 \value{
 A dataframe containing coordinates of cluster particles. The number of rows will be the number of points in the initial cluster plus \code{N}.

@@ -5,7 +5,7 @@
 \title{Visualize DLA cluster}
 \usage{
 vis.dla(data, color0 = "green", color1 = "red", return.data = FALSE,
-  plot = TRUE)
+  plot = TRUE, dupl.rm = TRUE)
 }
 \arguments{
 \item{data}{a dataframe or matrix with 2 or 3 columns of particle coordinates (for a 2D or 3D cluster), like the one produced by \code{dla2d} or \code{dla3d}. An additional column named "color" will be tolerated and ignored.}
@@ -17,6 +17,8 @@ vis.dla(data, color0 = "green", color1 = "red", return.data = FALSE,
 \item{return.data}{logical, whether the function should return the data frame used for plotting}
 
 \item{plot}{logical, whether the function should produce a plot}
+
+\item{dupl.rm}{logical, whether to remove duplicate particles (particles with identical coordinates), leaving the earliest ones. Normally, there should not be duplicate particles, but one exception is when the source of particles was at a finite point and the cluster reached it, so all particles emitted after that remain at the source.}
 }
 \value{
 if \code{return.data} is TRUE, will return the data frame with the extra column "color" containing particle colors
