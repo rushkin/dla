@@ -383,27 +383,47 @@ dla3dsource=function(N=200,initial=data.frame(x=0,y=0,z=0), source=c(100,0,0), a
 
 #' Visualize DLA cluster
 #'
+#' Particles will be colored in the chronological order using a color scale. The function can  produce a plot and/or return the data frame of the cluster coordinates with the particle colors added.
 #'
-#' @param data a dataframe or matrix with 2 or 3 columns of particle coordinates (for a 2D or 3D cluster), like the one produced by \code{dla2d} or \code{dla3d}.
-#' @param color0 color for the earliest particles
-#' @param color1 color for the latest particles
-#'
-#' @return
+#' @param data a dataframe or matrix with 2 or 3 columns of particle coordinates (for a 2D or 3D cluster), like the one produced by \code{dla2d} or \code{dla3d}. An additional column named "color" will be tolerated and ignored.
+#' @param color0 color for the earliest particles, start color of the color scale
+#' @param color1 color for the latest particles, end color of the color scale
+#' @param return.data logical, whether the function should return the data frame used for plotting
+#' @param plot logical, whether the function should produce a plot
+#' @return if \code{return.data} is TRUE, will return the data frame with the extra column "color" containing particle colors
 #' @export
 #'
-vis.dla=function(data,color0='green',color1='red'){
+vis.dla=function(data,color0='green',color1='red',return.data=FALSE,plot=TRUE){
 
-  if(ncol(data)==2){
+  data=as.data.frame(data)
 
-    title=paste("Diffusion-Limited Aggregation of",nrow(data), "Particles")
+  if('color' %in% colnames(data)){
+    data$color=NULL
+  }
 
-    plot(data[,1],data[,2],col=colorRampPalette(c(color0,color1))(nrow(data)), pch=".", type='p',asp=1, main=title, xlab='', ylab='',
+  if(!(ncol(data) %in% c(2,3))){
+    message('Error. The number of columns in the data must be 2 or 3.\n')
+    return(NULL)
+  }
+
+  d=ncol(data)
+
+  if(d==2) {names(data)=c('x','y')}
+  if(d==3) {names(data)=c('x','y','z')}
+
+  data$color=colorRampPalette(c(color0,color1))(nrow(data))
+
+  if(plot){
+  title=paste("Diffusion-Limited Aggregation of",nrow(data), "Particles")
+  if(d==2){
+    plot(data$x,data$y,col=data$color, pch=".", type='p',asp=1, main=title, xlab='', ylab='',
        xaxt='n',yaxt='n', cex=1, bty="n")
   }
 
-  if(ncol(data)==3){
-    title=paste("Diffusion-Limited Aggregation of",nrow(data), "Particles")
-    scatterplot3d::scatterplot3d(data[,1],data[,2],data[,3],color=colorRampPalette(c(color0,color1))(nrow(data)),pch=".", asp=1, main=title, xlab="",ylab="", zlab="", grid=FALSE,axis=TRUE, tick.marks=FALSE, cex.symbols=3)
+  if(d==3){
+    scatterplot3d::scatterplot3d(data$x,data$y,data$z,color=data$color,pch=".", asp=1, main=title, xlab="",ylab="", zlab="", grid=FALSE,axis=TRUE, tick.marks=FALSE, cex.symbols=3)
   }
+  }
+  if(return.data) return(data)
 
 }

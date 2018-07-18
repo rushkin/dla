@@ -4,15 +4,23 @@
 \alias{vis.dla}
 \title{Visualize DLA cluster}
 \usage{
-vis.dla(data, color0 = "green", color1 = "red")
+vis.dla(data, color0 = "green", color1 = "red", return.data = FALSE,
+  plot = TRUE)
 }
 \arguments{
-\item{data}{a dataframe or matrix with 2 or 3 columns of particle coordinates (for a 2D or 3D cluster), like the one produced by \code{dla2d} or \code{dla3d}.}
+\item{data}{a dataframe or matrix with 2 or 3 columns of particle coordinates (for a 2D or 3D cluster), like the one produced by \code{dla2d} or \code{dla3d}. An additional column named "color" will be tolerated and ignored.}
 
-\item{color0}{color for the earliest particles}
+\item{color0}{color for the earliest particles, start color of the color scale}
 
-\item{color1}{color for the latest particles}
+\item{color1}{color for the latest particles, end color of the color scale}
+
+\item{return.data}{logical, whether the function should return the data frame used for plotting}
+
+\item{plot}{logical, whether the function should produce a plot}
+}
+\value{
+if \code{return.data} is TRUE, will return the data frame with the extra column "color" containing particle colors
 }
 \description{
-Visualize DLA cluster
+Particles will be colored in the chronological order using a color scale. The function can  produce a plot and/or return the data frame of the cluster coordinates with the particle colors added.
 }
