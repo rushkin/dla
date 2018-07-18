@@ -55,11 +55,12 @@ while (n<N){
     }
 
 
-    if(proc.time()[3]-tic > write.every){
-      if(!is.null(write.to)){
+    if(!is.null(write.to)){
+      if(proc.time()[3]-tic > write.every){
+        cat('Particles:',length(X),'\n')
         saveRDS(data.frame(x=X,y=Y),file=write.to)
+        tic=proc.time()[3]
       }
-      tic=proc.time()[3]
     }
 
   }
@@ -137,12 +138,12 @@ dla3d=function(N=200,initial=data.frame(x=0,y=0,z=0), abandon.factor=10, diamete
       R=max(R,sqrt(x^2+y^2+z^2))
     }
 
-
-    if(proc.time()[3]-tic > write.every){
-      if(!is.null(write.to)){
+    if(!is.null(write.to)){
+      if(proc.time()[3]-tic > write.every){
+        cat('Particles:',length(X),'\n')
         saveRDS(data.frame(x=X,y=Y,z=Z),file=write.to)
+        tic=proc.time()[3]
       }
-      tic=proc.time()[3]
     }
 
   }
@@ -156,22 +157,29 @@ dla3d=function(N=200,initial=data.frame(x=0,y=0,z=0), abandon.factor=10, diamete
 
 
 
-  # print(proc.time()-ptm)
-  # save(X,Y,R,file=paste("dla-",length(X),".RData", sep=""))
-  # color=c('black','purple','blue','cyan','green','orange','red')
-  #
-  # Stage=ceiling(length(X)/NumberOfStagesInPlot)
-  # ccc=rep(color[1],Stage)
-  # for (k in 2:NumberOfStagesInPlot){
-  #   ccc=c(ccc,rep(color[1+(k-1)%%length(color)],Stage))
-  #
-  # }
-  # ccc=ccc[1:length(X)]
-  #
-  # png(file=paste("DLA-",length(X),"-particles.png", sep=""),width=2000,height=2000)
-  #
-  # plot(X,Y,col=ccc, pch=".", type='p',asp=1, main=paste("Diffusion-Limited Aggregation of",length(X), "Particles"), xlab='', ylab='',
-  #      xaxt='n',yaxt='n', cex=1, bty="n")
-  #
-  #
-  #
+#' Visualize DLA cluster
+#'
+#'
+#' @param data a dataframe or matrix with 2 or 3 columns of particle coordinates (for a 2D or 3D cluster), like the one produced by \code{dla2d} or \code{dla3d}.
+#' @param color0 color for the earliest particles
+#' @param color1 color for the latest particles
+#'
+#' @return
+#' @export
+#'
+vis.dla=function(data,color0='green',color1='red'){
+
+  if(ncol(data)==2){
+
+    title=paste("Diffusion-Limited Aggregation of",nrow(data), "Particles")
+
+    plot(data[,1],data[,2],col=colorRampPalette(c(color0,color1))(nrow(data)), pch=".", type='p',asp=1, main=title, xlab='', ylab='',
+       xaxt='n',yaxt='n', cex=1, bty="n")
+  }
+
+  if(ncol(data)==3){
+    title=paste("Diffusion-Limited Aggregation of",nrow(data), "Particles")
+    scatterplot3d::scatterplot3d(data[,1],data[,2],data[,3],color=colorRampPalette(c(color0,color1))(nrow(data)),pch=".", asp=1, main=title, xlab="",ylab="", zlab="", grid=FALSE,axis=TRUE, tick.marks=FALSE, cex.symbols=3)
+  }
+
+}

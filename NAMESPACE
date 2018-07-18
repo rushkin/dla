@@ -2,3 +2,4 @@
 
 export(dla2d)
 export(dla3d)
+export(vis.dla)
