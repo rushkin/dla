@@ -6,12 +6,12 @@
 \usage{
 dla(N = 5000, initial = data.frame(x = 0, y = 0), source = Inf,
   abandon.factor = 10, diameter.tol = 0.01, checkin.every = 5000,
-  verbose = TRUE, write.to = NULL)
+  verbose = TRUE, write.to = NULL, phi = c(0, 2 * pi), theta = c(0, pi))
 }
 \arguments{
 \item{N}{number of particles to be added to the initial cluster (can be Inf)}
 
-\item{initial}{a data-frame or matrix of coordinates of the initial cluster. The default is a single seed particle at the origin of 2-dimensional plane.
+\item{initial}{a data-frame or matrix of coordinates of the initial cluster. For a single seed particle, a coordinate vector will be also accepted. The default is a single seed particle at the origin of 2-dimensional plane.
 The number of columns must be 2 or 3 and serves as the dimensionality of space in which the cluster will be grown.
 Column names do not matter, only their order.}
 
@@ -29,6 +29,8 @@ It may also print a progress message and export cluster to a file, as controlled
 \item{verbose}{logical, indicating whether the function should print out progress statements at the end of each stage controlled by \code{checkin.every}.}
 
 \item{write.to}{if not NULL, it is the file path to which the function will export the cluster at the end of each stage controlled by \code{checkin.every}.}
+
+\item{phi, theta}{two vectors of length 2, denoting the boundaries of the sector of particle propagation. \code{phi} is the azimuthal angle (longitude in 3D) and \code{theta} is the polar angle of spherical coordinates in 3D (the pole being 0).}
 }
 \value{
 A dataframe containing coordinates of cluster particles. The number of rows will be the number of points in the initial cluster plus \code{N}.
