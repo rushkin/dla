@@ -19,8 +19,9 @@
 #' @return A dataframe containing coordinates of cluster particles. The number of rows will be the number of points in the initial cluster plus \code{N}.
 #' @export
 #'
-#' @examples
 dla=function(N=5000, initial=data.frame(x=0,y=0), source=Inf, abandon.factor=10, diameter.tol=0.01, checkin.every=5000, verbose=TRUE, write.to=NULL
+             ,flow=FALSE
+             ,exit_density=NULL
              ,phi=c(0,2*pi),theta=c(0,pi)){
   tic=proc.time()[3]
 
@@ -48,6 +49,11 @@ dla=function(N=5000, initial=data.frame(x=0,y=0), source=Inf, abandon.factor=10,
     return(NULL)
   }
 
+  if(diameter.tol<=0){
+    message('Error. The diameter tolerance needs to be positive. \n')
+    return(NULL)
+  }
+
 
   export=(!is.null(write.to))
 
@@ -56,13 +62,24 @@ dla=function(N=5000, initial=data.frame(x=0,y=0), source=Inf, abandon.factor=10,
 
   if(any(is.infinite(source))){
 
-    if(d==2){
+
+
+    if((d==2)&(!flow)){
       while(nrow(df)<N){
         df=dla2dinf(N=min(checkin.every,N-nrow(df)),initial=df,abandon.factor = abandon.factor,diameter.tol=diameter.tol,phi=phi)
         if(export) saveRDS(df,file=write.to)
         if(verbose) cat(paste0('Particles: ',nrow(df),'. Elapsed time: ',round(proc.time()[3]-tic),' sec.\n'))
       }
     }
+
+    if((d==2)&(flow)){
+      while(nrow(df)<N){
+        df=dla2dinf_flow(N=min(checkin.every,N-nrow(df)),initial=df,abandon.factor = abandon.factor,diameter.tol=diameter.tol,exit_density=exit_density)
+        if(export) saveRDS(df,file=write.to)
+        if(verbose) cat(paste0('Particles: ',nrow(df),'. Elapsed time: ',round(proc.time()[3]-tic),' sec.\n'))
+      }
+    }
+
     if(d==3){
       while(nrow(df)<N){
         df=dla3dinf(N=min(checkin.every,N-nrow(df)),initial=df,abandon.factor = abandon.factor,diameter.tol=diameter.tol,phi=phi,costheta=costheta)
@@ -160,6 +177,71 @@ dla2dinf=function(N=200,initial=data.frame(x=0,y=0), abandon.factor=10, diameter
 
   return(df)
 }
+
+dla2dinf_flow=function(N=200,initial=data.frame(x=0,y=0), abandon.factor=10, diameter.tol=0.01, exit_density=NULL){
+
+  if(is.null(exit_density)){
+    #Normalize density function in such a way that max(rho)<=1
+    exit_density=function(x,k=0.1,r=1){
+      return(exp(k*r*(cos(x)-1)))
+    }
+  }
+
+
+  # phi0=phi[1]
+  # phi1=phi[2]
+  phi1=2*pi
+  phi0=0
+  X=initial[,1]
+  Y=initial[,2]
+  R=sqrt(max(X^2+Y^2))
+
+  tolerated=1-diameter.tol #tolerated particle diameter
+  Ab=0
+
+  n=0
+
+  while (n<N){
+
+    RStart=R+1
+    Abandon=RStart*abandon.factor
+    phi=runif(phi0,phi1)
+    x=RStart*cos(phi)
+    y=RStart*sin(phi)
+
+    minDist=sqrt(min((X-x)^2+(Y-y)^2))
+    Ab=0
+
+    while(minDist>1){
+
+      Rcur=minDist-tolerated
+      phi=rdens(1,exit_density, params=list(r=Rcur))
+      x=x+Rcur*cos(phi)
+      y=y+Rcur*sin(phi)
+
+      minDist=sqrt(min((X-x)^2+(Y-y)^2))
+
+
+      if(minDist>Abandon){
+        Ab=1
+        break
+      }
+    }
+
+    if(Ab==0){
+      n=n+1
+      X=c(X,x)
+      Y=c(Y,y)
+      R=max(R,sqrt(x^2+y^2))
+    }
+
+  }
+
+  df=data.frame(x=X,y=Y)
+
+  return(df)
+}
+
 
 dla2dsource=function(N=200,initial=data.frame(x=0,y=0), source=c(100,0), abandon.factor=10, diameter.tol=0.01, phi=c(0,2*pi)){
 

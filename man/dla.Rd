@@ -6,7 +6,8 @@
 \usage{
 dla(N = 5000, initial = data.frame(x = 0, y = 0), source = Inf,
   abandon.factor = 10, diameter.tol = 0.01, checkin.every = 5000,
-  verbose = TRUE, write.to = NULL, phi = c(0, 2 * pi), theta = c(0, pi))
+  verbose = TRUE, write.to = NULL, flow = FALSE, exit_density = NULL,
+  phi = c(0, 2 * pi), theta = c(0, pi))
 }
 \arguments{
 \item{N}{number of particles to be added to the initial cluster (can be Inf)}
