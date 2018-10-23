@@ -2,7 +2,7 @@
 % Please edit documentation in R/sle.R
 \name{sle}
 \alias{sle}
-\title{sle}
+\title{Stochastic Loewner Evolution}
 \usage{
 sle(kappa = 4, tmax = 1, a = 1, kappaL = 0, nsteps = 2000,
   p_timescaling = 0.5, verbose = TRUE)
@@ -23,7 +23,7 @@ sle(kappa = 4, tmax = 1, a = 1, kappaL = 0, nsteps = 2000,
 \item{verbose}{boolean, to print progress statements or not.}
 }
 \value{
-List with components: \code{t} - vector of time values, \code{xi} - vector of values of the driving function, \code{t_cross} - crossover time between Brownian and Levy components (NULL if \code{kappaL = 0}), \code{call_params} - list of call parameters, \code{runtime} - elapsed time in seconds.
+List with components: \code{t} - vector of time values, \code{xi} - vector of values of the driving function, \code{gamma} - data frame of x and y coordinates of the generated trace,\code{t_cross} - crossover time between Brownian and Levy components (NULL if \code{kappaL = 0}), \code{call_params} - list of call parameters, \code{runtime} - elapsed time in seconds.
 }
 \description{
 Generate SLE trace driven by Brownian motion, possibly with the addition of Levy-flights

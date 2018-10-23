@@ -15,7 +15,7 @@ f=function(z,xi,fourdt){
   return(z)
 }
 
-#' sle
+#' Stochastic Loewner Evolution
 #'
 #' Generate SLE trace driven by Brownian motion, possibly with the addition of Levy-flights
 #'
@@ -36,7 +36,7 @@ f=function(z,xi,fourdt){
 #'
 #' Rushkin, I., Oikonomou, P., Kadanoff, L.P. and Gruzberg, I.A., 2006. Stochastic Loewner evolution driven by Lévy processes. Journal of Statistical Mechanics: Theory and Experiment, 2006(01), p.P01001.
 #'
-#' @return List with components: \code{t} - vector of time values, \code{xi} - vector of values of the driving function, \code{t_cross} - crossover time between Brownian and Levy components (NULL if \code{kappaL = 0}), \code{call_params} - list of call parameters, \code{runtime} - elapsed time in seconds.
+#' @return List with components: \code{t} - vector of time values, \code{xi} - vector of values of the driving function, \code{gamma} - data frame of x and y coordinates of the generated trace,\code{t_cross} - crossover time between Brownian and Levy components (NULL if \code{kappaL = 0}), \code{call_params} - list of call parameters, \code{runtime} - elapsed time in seconds.
 #' @export
 sle=function(kappa=4,tmax=1, a=1, kappaL=0, nsteps=2000, p_timescaling=0.5, verbose=TRUE){
   tic=proc.time()[3]
