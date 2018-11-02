@@ -5,7 +5,7 @@
 \title{Stochastic Loewner Evolution}
 \usage{
 sle(kappa = 4, tmax = 1, a = 1, kappaL = 0, nsteps = 2000,
-  p_timescaling = 0.5, verbose = TRUE)
+  p_timescaling = 0.5, verbose = TRUE, forcing = NULL)
 }
 \arguments{
 \item{kappa}{strength of the 1d Brownian motion in the driving function.}
@@ -21,6 +21,9 @@ sle(kappa = 4, tmax = 1, a = 1, kappaL = 0, nsteps = 2000,
 \item{p_timescaling}{exponent determining the distribution of time steps. The succession of times will be made uniform in the variable \code{t^p_timescaling}.}
 
 \item{verbose}{boolean, to print progress statements or not.}
+
+\item{forcing}{if not NULL, should be a dataframe of the driving function, which will then be used, overriding other driving-related arguments.
+The dataframe should have columns t and xi, starting from t=0 and xi=0, sorted.}
 }
 \value{
 List with components: \code{t} - vector of time values, \code{xi} - vector of values of the driving function, \code{gamma} - data frame of x and y coordinates of the generated trace,\code{t_cross} - crossover time between Brownian and Levy components (NULL if \code{kappaL = 0}), \code{call_params} - list of call parameters, \code{runtime} - elapsed time in seconds.
